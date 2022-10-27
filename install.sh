@@ -10,14 +10,14 @@ export V2RAYPATH=""
 function dns() {
       ## get local machine if it is a ipv6 only server
       if (ping -c 5 1.1.1.1); then
-            echo "nameserver 2606:4700:4700::64
+            echo "nameserver 1.1.1.1
+nameserver 8.8.8.8
+nameserver 2606:4700:4700::64
 nameserver 2606:4700:4700::6400
 nameserver 2606:4700:4700:0:0:0:0:64
 nameserver 2606:4700:4700:0:0:0:0:6400
 nameserver 2001:67c:2b0::4
-nameserver 2001:67c:2b0::6
-nameserver 1.1.1.1
-nameserver 8.8.8.8" >/etc/resolv.conf
+nameserver 2001:67c:2b0::6" >/etc/resolv.conf
       else
             echo "nameserver 2001:67c:2b0::4
 nameserver 2001:67c:2b0::6
@@ -35,12 +35,13 @@ function installPackages() {
 }
 
 ## create essential dir
-function createLogDir() {
+function createDir() {
       echo "Creating essential directories..."
       mkdir -p /var/log/nginx
       mkdir -p /var/log/v2ray
       mkdir -p /etc/nginx/sites-enabled
       mkdir -p /etc/nginx/ssl
+      mkdir -p /var/www/hugo
 }
 
 ## Install v2ray-core
@@ -157,6 +158,12 @@ function generateConfig() {
                   proxy_set_header Upgrade \$http_upgrade;
                   proxy_set_header Connection \"upgrade\";
                   proxy_set_header Host \$host;
+            }
+            
+            # hugo fake site
+            location / {
+                  root /var/www/hugo;
+                  index index.html;
             }
       }
       " >/etc/nginx/sites-enabled/$domain.conf
@@ -324,6 +331,18 @@ WantedBy=multi-user.target
 }
 
 ## create fake website for GFW active detectation
+function fakeSite(){
+      echo "Creating fake site..."
+      mkdir -p /var/www/hugo
+      
+      rm -r ./V2RayInstallScript
+      git clone --recursive https://github.com/Alex222222222222/V2RayInstallScript.git
+      cd V2RayInstallScript
+      cd Fake
+      hugo -d /var/www/hugo
+      cd ~
+
+}
 
 ## export clash config and v2ray config link to /root/config.txt
 function exportConfig() {
@@ -410,11 +429,12 @@ function exportConfig() {
 
 dns
 installPackages
-createLogDir
+createDir
 installV2ray
 installAcme
 createSSL
 generateConfig
 ufw
 systemdInit
+fakeSite
 exportConfig
