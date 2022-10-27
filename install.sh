@@ -30,7 +30,7 @@ nameserver 2001:67c:27e4::60" >/etc/resolv.conf
 function installPackages() {
       echo "Installing packages..."
       apt update
-      apt install -y wget curl vim tmux htop ncdu nginx git ufw mosh unzip
+      apt install -y wget curl vim tmux htop ncdu nginx git ufw mosh unzip hugo
       apt upgrade -y
 }
 
